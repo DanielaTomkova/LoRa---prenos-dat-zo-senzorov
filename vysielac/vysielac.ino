@@ -85,7 +85,7 @@ void initOLED() {
   u8g2_for_adafruit_gfx.setFont(u8g2_font_helvR08_te);
   u8g2_for_adafruit_gfx.setForegroundColor(WHITE);      // apply Adafruit GFX color
   u8g2_for_adafruit_gfx.setCursor(0, 15);               // start writing at this position
-  u8g2_for_adafruit_gfx.print("LoRa vysielač 1");
+  u8g2_for_adafruit_gfx.print("LoRa vysielač");
   display.display();
 }
 
