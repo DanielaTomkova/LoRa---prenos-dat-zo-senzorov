@@ -156,7 +156,7 @@ void displayReadings()
 {
   display.clearDisplay();
   u8g2_for_adafruit_gfx.setCursor(0, 15);
-  u8g2_for_adafruit_gfx.println("LoRa vysielač 1");
+  u8g2_for_adafruit_gfx.println("LoRa vysielač");
   u8g2_for_adafruit_gfx.setCursor(0, 31);
   u8g2_for_adafruit_gfx.print("TEPLOTA");
   u8g2_for_adafruit_gfx.setCursor(50, 31);
