@@ -149,15 +149,20 @@ void initLoRa() {
 
 //----------------------Connect to WiFi Function-----------------------------------------//
 void connectWiFi() {
+  int counter;
   // Connect to Wi-Fi network with SSID and password
   Serial.print("Connecting to ");
   Serial.println(ssid);
+  
   WiFi.begin(ssid, password);
-  /*while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+  while (WiFi.status() != WL_CONNECTED && counter < 10) {
     Serial.print(".");
-  }*/
-  delay(5000);
+    counter++;
+    delay(500);
+  }
+  if (counter == 10) {
+    Serial.println("WiFi connection failed!");
+  }
   if (WiFi.status() == WL_CONNECTED) {
    // Print local IP address and start web server
    Serial.println("");
@@ -175,7 +180,7 @@ void connectWiFi() {
    Serial.println("WiFi disconnected.");
    display.clearDisplay();
    u8g2_for_adafruit_gfx.setCursor(0, 15);
-   u8g2_for_adafruit_gfx.print("Wi-Fi sieť nedostupná");
+   u8g2_for_adafruit_gfx.print("WiFi sieť nedostupná");
    display.display();
   }
 }
@@ -207,11 +212,18 @@ void getLoRaData() {
 
 //-----------------------Function to get date and time from NTPClient------------------//
 void getTimeStamp() {
-  /*while (!timeClient.update()) {
-    timeClient.forceUpdate();
-  }*/
-  timeClient.forceUpdate();
-  delay(1000);
+  int counter;
+  if (WiFi.status() == WL_CONNECTED) {
+    while (!timeClient.update() && counter < 10) {
+      timeClient.forceUpdate();
+      Serial.print(".");
+      counter++;
+      delay(500);
+    }
+    if (counter == 10) {
+      Serial.println("Getting time failed!");
+    }
+  }
   if (timeClient.update()) {
     // The formattedDate comes with the following format:
     // 2018-05-28T16:00:13Z
@@ -237,9 +249,13 @@ void displayReadings()
 {
   display.clearDisplay();
   u8g2_for_adafruit_gfx.setCursor(0, 15);
-  u8g2_for_adafruit_gfx.print("http://");
-  u8g2_for_adafruit_gfx.setCursor(30,15);
-  u8g2_for_adafruit_gfx.print(WiFi.localIP());
+  if (WiFi.status() == WL_CONNECTED) {
+    u8g2_for_adafruit_gfx.print("http://");
+    u8g2_for_adafruit_gfx.setCursor(30,15);
+    u8g2_for_adafruit_gfx.print(WiFi.localIP());
+  } else {
+    u8g2_for_adafruit_gfx.print("LoRa prijímač (bez WiFi");
+  }
   u8g2_for_adafruit_gfx.setCursor(0, 31);
   u8g2_for_adafruit_gfx.print("TEPLOTA");
   u8g2_for_adafruit_gfx.setCursor(50, 31);
