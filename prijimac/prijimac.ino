@@ -78,7 +78,7 @@ AsyncWebServer server(80);
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 U8G2_FOR_ADAFRUIT_GFX u8g2_for_adafruit_gfx;
 
-// Replaces placeholder with DHT values
+// Replaces placeholder with BMP values
 String processor(const String& var) {
   //Serial.println(var);
   if (var == "TEMPERATURE") {
@@ -207,23 +207,29 @@ void getLoRaData() {
 
 //-----------------------Function to get date and time from NTPClient------------------//
 void getTimeStamp() {
-  while (!timeClient.update()) {
+  /*while (!timeClient.update()) {
     timeClient.forceUpdate();
-  }
-  // The formattedDate comes with the following format:
-  // 2018-05-28T16:00:13Z
-  // We need to extract date and time
-  formattedDate = timeClient.getFormattedDate();
-  Serial.println(formattedDate);
+  }*/
+  timeClient.forceUpdate();
+  delay(1000);
+  if (timeClient.update()) {
+    // The formattedDate comes with the following format:
+    // 2018-05-28T16:00:13Z
+    // We need to extract date and time
+    formattedDate = timeClient.getFormattedDate();
+    Serial.println(formattedDate);
 
-  // Extract date
-  int splitT = formattedDate.indexOf("T");
-  day = formattedDate.substring(0, splitT);
-  Serial.println(day);
-  // Extract time
-  hour = formattedDate.substring(splitT + 1, formattedDate.length() - 1);
-  Serial.println(hour);
-  timestamp = day + " " + hour;
+    // Extract date
+    int splitT = formattedDate.indexOf("T");
+    day = formattedDate.substring(0, splitT);
+    Serial.println(day);
+    // Extract time
+    hour = formattedDate.substring(splitT + 1, formattedDate.length() - 1);
+    Serial.println(hour);
+    timestamp = day + " " + hour;
+  } else {
+    timestamp = "1970-01-01 00:00:00";
+  }
 }
 
 //-------------------------Display Readings on OLED-------------------------------------//
