@@ -1,3 +1,12 @@
+// ----------------------------------------------------------------------------------//
+// Project           - Snímanie teploty, tlaku a vlhkosti pôdy a odosielanie údajov pomocou LoRA na prijímač
+// Vypracovala       - Daniela Tomková
+// Software Platform - C/C++,HTML,CSS, Arduino IDE, Libraries
+// Hardware Platform - TTGo LoRa ESP32 OLED v1, 0.96" OLED, Arduino MKRWAN 1300, BMP280 Sensor, DHT22 Sensor
+// Sensors Used      - BMP280 Senzor teploty a tlaku, Kapacitný senzor vlhkosti pôdy
+// Last Modified     - 15. 01. 2023
+// -------------------------------------------------------------------------------------
+
 //Libraries for LoRa
 #include <Wire.h>
 #include <SPI.h>
@@ -37,6 +46,9 @@
 float temperature = 0;
 float pressure = 0;
 float humidity = 0;
+
+int readDelay = 5000;
+int sendDelay = 10000;
 
 //initilize packet counter
 int readingID = 0;
@@ -85,6 +97,9 @@ void initLoRa() {
   //setup LoRa transceiver module
   LoRa.setPins(SS, RST, DIO0);
 
+  display.clearDisplay();
+  u8g2_for_adafruit_gfx.setCursor(0, 10);
+  
   while (!LoRa.begin(BAND) && counter < 10) {
     Serial.print(".");
     counter++;
@@ -93,11 +108,11 @@ void initLoRa() {
   if (counter == 10) {
     // Increment readingID on every new reading
     Serial.println("Starting LoRa failed!");
+    u8g2_for_adafruit_gfx.print("LoRa modul KO!"); 
+  } else {
+    Serial.println("LoRa Initialization OK!");
+    u8g2_for_adafruit_gfx.print("LoRa modul OK!");
   }
-  Serial.println("LoRa Initialization OK!");
-  display.clearDisplay();
-  u8g2_for_adafruit_gfx.setCursor(0, 10);
-  u8g2_for_adafruit_gfx.print("LoRa modul OK!");
   display.display();
   delay(2000);
 }
@@ -148,7 +163,7 @@ void getReadings()
 {
   getCSMSreadings();
   getBMPreadings();
-  delay(5000);
+  delay(readDelay);
 }
 
 //-------------------------Display Readings on OLED-------------------------------------//
@@ -189,16 +204,16 @@ void displayReadings()
 
 //------------------Send data to receiver node using LoRa-------------------------//
 void sendReadings() {
-  LoRaMessage = String(readingID) + "/" + String(temperature) + "&" + String(humidity) + "#" + String(pressure);
-  //Send LoRa packet to receiver
-  LoRa.beginPacket();
-  LoRa.print(LoRaMessage);
-  LoRa.endPacket();
-
-  Serial.println("Packet Sent!");
-  displayReadings();
-
-  delay(10000);
+  if (LoRa.begin(BAND)) {
+    LoRaMessage = String(readingID) + "/" + String(temperature) + "&" + String(humidity) + "#" + String(pressure);
+    //Send LoRa packet to receiver
+    LoRa.beginPacket();
+    LoRa.print(LoRaMessage);
+    LoRa.endPacket();
+    Serial.println("Packet Sent!");
+    displayReadings();
+    delay(sendDelay);
+  }
 }
 
 void setup() 
